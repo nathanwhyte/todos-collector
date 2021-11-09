@@ -22,9 +22,9 @@ function find_no_root_dir () {
 
 function find_root_dir () {
   find $FIND_ROOT_DIR -iname "*.org" > org-files.txt
+  rm -f ~/Dropbox/Org/planner/todo-list.org
   read_lines
   rm -f org-files.txt
-  rm -f ~/Dropbox/Org/planner/todo-list.org
   exit 0
 }
 
@@ -36,6 +36,6 @@ while getopts d: flag; do
   esac
 done
 
-find_no_root_dir
 rm -f ~/Dropbox/Org/planner/todo-list.org
+find_no_root_dir
 rm -f org-files.txt
