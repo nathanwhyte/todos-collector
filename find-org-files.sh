@@ -3,39 +3,43 @@
 # find all of the Org files within a given root directory
 # redirect output into temp file
 
+TMP_ORG_FILE=$(mktemp /tmp/todo-collector-XXXXX)
+TMP_TODO_FILE=$(mktemp /tmp/todo-collector-XXXXX)
+
+FIND_IN_DIR=''
+
 function read_lines () {
   if [ -f todo-files.txt ]; then
     rm -f todo-files.txt
   fi
 
-  while read -r line; do
-    if grep -q "* TODO" "$line"; then
-      echo $line >> todo-files.txt
+  while read -r LINE; do
+    if grep -q "* TODO" "$LINE"; then
+      echo $LINE >> TMP_TODO_FILE
     fi
-  done < org-files.txt
+  done < TMP_ORG_FILE
 }
 
-function find_no_root_dir () {
-  find ~/Dropbox/Org -iname "*.org" > org-files.txt
+function find_no_given_dir () {
+  find ~/Dropbox/Org -iname "*.org" > TMP_ORG_FILE
   read_lines
 }
 
-function find_root_dir () {
-  find $FIND_ROOT_DIR -iname "*.org" > org-files.txt
-  rm -f ~/Dropbox/Org/planner/todo-list.org
+function find_in_given_dir () {
+  find $FIND_IN_DIR -iname "*.org" > TMP_ORG_FILE
   read_lines
-  rm -f org-files.txt
-  exit 0
 }
 
-while getopts d: flag; do
-  case "${flag}" in
-    d) FIND_ROOT_DIR=${OPTARG}
-       find_root_dir
-       ;;
-  esac
-done
+if [ $# -eq 0 ]; then
+  find_no_given_dir
+else
+  while getopts "d" FLAG; do
+    case $FLAG in
+      d) FIND_IN_DIR=$OPTARG
+         find_in_given_dir
+         ;;
+    esac
+  done
+fi
 
-rm -f ~/Dropbox/Org/planner/todo-list.org
-find_no_root_dir
-rm -f org-files.txt
+echo "list of todo files in /tmp : $TMP_TODO_FILE"
